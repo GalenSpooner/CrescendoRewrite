@@ -19,9 +19,10 @@ public class Intake extends SubsystemBase {
         flipBeamBreak = false;
         topMotor = new RockinSparkMax(Constants.IntakeConstants.INTAKE_TOPROLLER_ID, MotorType.kBrushless);
         bottomMotor = new RockinSparkMax(Constants.IntakeConstants.INTAKE_BOTTOMROLLER_ID, MotorType.kBrushless);
+        bottomMotor.follow(topMotor,true);
         topMotor.setCurrentLimit(40);
         bottomMotor.setCurrentLimit(40);
-        bottomMotor.follow(topMotor,true);
+        
         
     }
     private static enum IntakeState{

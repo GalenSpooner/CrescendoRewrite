@@ -8,7 +8,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class RockinCancoder extends CANcoder implements Subsystem{
     String name;
@@ -20,12 +19,20 @@ public class RockinCancoder extends CANcoder implements Subsystem{
     public double getDegrees(){
         return this.getAbsolutePosition().getValueAsDouble();
     }
+    /**
+     *  Method to have a TalonFX use this cancoder instead of it's internal encoder
+     * @param talonFX that you want to bind this cancoder to
+     */
     public void attachToTalonFX(TalonFX talonFX){
         talonFX.getConfigurator().apply(new TalonFXConfiguration().Feedback.withRemoteCANcoder(this));
     }
-    public void getVelocityInRPS(){
-        this.getVelocity().getValueAsDouble();
+    public double getVelocityInRPS(){
+        return this.getVelocity().getValueAsDouble();
     }
+    /**
+ * Gives name of Cancoder
+ * @return Cancoder name
+  */
     @Override
     public String getName() {
         return name;

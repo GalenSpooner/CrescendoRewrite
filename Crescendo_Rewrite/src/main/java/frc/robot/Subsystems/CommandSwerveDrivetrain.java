@@ -34,6 +34,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private Idle idle = new Idle();
+    private SwerveRequest.RobotCentric rotateRequest = new SwerveRequest.RobotCentric();
     private final SwerveRequest.ApplyChassisSpeeds AutoRequest = new SwerveRequest.ApplyChassisSpeeds();
     public CommandSwerveDrivetrain(SwerveDrivetrainConstants driveTrainConstants, double OdometryUpdateFrequency, SwerveModuleConstants... modules) {
         super(driveTrainConstants, OdometryUpdateFrequency, modules);
@@ -110,7 +111,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         
         return runOnce(() ->this.setControl(idle));
     }
-
+    
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 

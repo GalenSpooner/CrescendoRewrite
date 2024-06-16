@@ -19,8 +19,6 @@ public class RobotContainer {
     
     SmartDashboard.putData(chooser);
     chooser.addOption("OnePiece", 0);
-    chooser.addOption("TwoPiece", 1);
-    
     configureBindings();
   }
 

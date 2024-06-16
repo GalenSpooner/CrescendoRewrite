@@ -13,7 +13,7 @@ public class Constants {
         public static final int SHOOTER_TOPFEEDER_ID = 33;
         public static final int SHOOTER_PIVOT_ENCODER_ID = 34;
         public static final int SHOOTER_PIVOTMOTOR_ID = 35;
-
+        
 
         
     }
@@ -26,6 +26,11 @@ public class Constants {
     public static class OperatorConstants{
 
     }
+    public static final class FieldConstants{
+        public static final int SPEAKER_HEIGHT = 7 * 12;
+        public static final double SPEAKER_X_BLUE = 0;
+        public static final double SPEAKER_X_RED = 54;
+      }
 
 
 }
