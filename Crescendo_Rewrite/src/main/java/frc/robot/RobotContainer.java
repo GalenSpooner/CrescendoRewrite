@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import RockinLib.Control.RockinJoystick;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -47,6 +49,19 @@ public class RobotContainer {
   RockinJoystick leftJoystick;
   RockinJoystick rightJoystick;
   CommandJoystick guitar;
+  PathPlannerPath fournote1 = PathPlannerPath.fromPathFile("4note1");
+  PathPlannerPath fournote2 = PathPlannerPath.fromPathFile("4note2");
+  PathPlannerPath fournote3 = PathPlannerPath.fromPathFile("4note3");
+  PathPlannerPath fournote4 = PathPlannerPath.fromPathFile("4note4");
+  PathPlannerPath fournote5 = PathPlannerPath.fromPathFile("4note5");
+  PathPlannerPath fivenote1 = PathPlannerPath.fromPathFile("5note1");
+  PathPlannerPath fivenote2 = PathPlannerPath.fromPathFile("5note2");
+  PathPlannerPath fivenotealt = PathPlannerPath.fromPathFile("5notealt");
+  PathPlannerPath fivenotealt2 = PathPlannerPath.fromPathFile("5notealt2");
+
+
+
+
   public RobotContainer() {
     drivetrain = TunerConstants.DriveTrain;
     shooter = new Shooter(drivetrain);
@@ -57,6 +72,7 @@ public class RobotContainer {
     guitar = new CommandJoystick(2);
     SmartDashboard.putData(chooser);
     chooser.addOption("OnePiece", 0);
+    chooser.addOption("5piece" , 1);
     configureBindings();
   }
 
@@ -88,12 +104,6 @@ public class RobotContainer {
     //config guitar button presses (climb)
     guitar.button(0).whileTrue(climber.climbersUp());
     guitar.button(1).whileTrue(climber.climbersDown());
-    
-
-
-    
-
-
   }
   private Command chooseAuto(){
     switch ((int) chooser.getSelected()) {
@@ -101,6 +111,47 @@ public class RobotContainer {
         return new SequentialCommandGroup(
               shooter.setState(PivotState.SPEAKER),
               shooter.ShootSpeaker()
+        );
+      case 1:
+        return new SequentialCommandGroup(
+
+          shooter.setState(PivotState.SPEAKER),
+          shooter.ShootSpeaker(),
+          intake.setState(IntakeState.INTAKING),
+
+          drivetrain.runPathplannerPathFile(fournote1),
+          drivetrain.runPathplannerPathFile(fournote2),
+
+          shooter.ShootSpeaker(),
+          intake.setState(IntakeState.INTAKING),
+          
+          drivetrain.runPathplannerPathFile(fournote3),
+
+          shooter.ShootSpeaker(),
+          intake.setState(IntakeState.INTAKING),
+
+          drivetrain.runPathplannerPathFile(fournote4),
+          drivetrain.runPathplannerPathFile(fournote5),
+
+          shooter.ShootSpeaker(),
+          intake.setState(IntakeState.INTAKING),
+
+          drivetrain.runPathplannerPathFile(fivenote1),
+
+          //logic for if robot does not pick up a note (it will go to the next note)
+          ((intake.getState() == IntakeState.HOLDING)?new InstantCommand(() ->{
+
+            drivetrain.runPathplannerPathFile(fivenote2);
+            shooter.ShootSpeaker();
+
+          }):new InstantCommand(() -> {
+
+            drivetrain.runPathplannerPathFile(fivenotealt);
+            drivetrain.runPathplannerPathFile(fivenotealt2);
+            shooter.ShootSpeaker();
+
+          }))
+
         );
     
       default:
