@@ -99,7 +99,6 @@ public class RobotContainer {
     switch ((int) chooser.getSelected()) {
       case 0:
         return new SequentialCommandGroup(
-              drivetrain.setPose(new Pose2d(1.25,5.5,Rotation2d.fromDegrees(180))),
               shooter.setState(PivotState.SPEAKER),
               shooter.ShootSpeaker()
         );
