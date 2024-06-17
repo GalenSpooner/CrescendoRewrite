@@ -13,18 +13,13 @@ public class Constants {
         public static final int SHOOTER_TOPFEEDER_ID = 33;
         public static final int SHOOTER_PIVOT_ENCODER_ID = 34;
         public static final int SHOOTER_PIVOTMOTOR_ID = 35;
-        
-
-        
     }
     public static class ClimberConstants{
         public static final int CLIMBER_LEFT_ID = 40;
         public static final int CLIMBER_RIGHT_ID = 41;
+        // dutycycles will need to be tuned to each climber to make them have the same speed
         public static final double CLIMBER_LEFT_DUTYCYCLE = 0.75;
         public static final double CLIMBER_RIGHT_DUTYCYCLE = 0.75;
-    }
-    public static class OperatorConstants{
-
     }
     public static final class FieldConstants{
         public static final int SPEAKER_HEIGHT = 7 * 12;

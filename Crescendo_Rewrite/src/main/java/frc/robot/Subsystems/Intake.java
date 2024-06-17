@@ -37,7 +37,9 @@ public class Intake extends SubsystemBase {
     }
     @Override
     public void periodic() {
+        //if beam break triggered and not outtaking, set state to holding
         this.state = (beamBreak.get() == !flipBeamBreak && state != IntakeState.OUTTAKING) ? IntakeState.HOLDING : this.state;
+        //if bam break not triggered and outtaking, set state to idle
         this.state = (beamBreak.get() == flipBeamBreak && state == IntakeState.OUTTAKING) ? IntakeState.IDLE : this.state;
         setSpeed(state.voltage);
         SmartDashboard.putString("Intake State", this.getState().toString());
