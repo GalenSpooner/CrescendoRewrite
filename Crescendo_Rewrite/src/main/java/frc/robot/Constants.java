@@ -1,6 +1,9 @@
 package frc.robot;
 
 public class Constants {
+    public static class VisionConstants{
+        public static final String LIMELIGHT_NAME = "limelight";
+    }
     public static class IntakeConstants{
         public static final int INTAKE_TOPROLLER_ID = 20;
         public static final int INTAKE_BOTTOMROLLER_ID = 21;
