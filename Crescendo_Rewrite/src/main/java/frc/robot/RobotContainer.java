@@ -142,16 +142,17 @@ public class RobotContainer {
 
           //logic for if robot does not pick up a note (it will go to the next note)
           ((intake.getState() == IntakeState.HOLDING)?new InstantCommand(() ->{
-
-            drivetrain.runPathplannerPathFile(fivenote2);
-            shooter.ShootSpeaker();
+            new SequentialCommandGroup(
+            drivetrain.runPathplannerPathFile(fivenote2),
+            shooter.ShootSpeaker()
+            );
 
           }):new InstantCommand(() -> {
-
-            drivetrain.runPathplannerPathFile(fivenotealt);
-            drivetrain.runPathplannerPathFile(fivenotealt2);
-            shooter.ShootSpeaker();
-
+            new SequentialCommandGroup(
+            drivetrain.runPathplannerPathFile(fivenotealt),
+            drivetrain.runPathplannerPathFile(fivenotealt2),
+            shooter.ShootSpeaker()
+            );
           }))
 
         );
