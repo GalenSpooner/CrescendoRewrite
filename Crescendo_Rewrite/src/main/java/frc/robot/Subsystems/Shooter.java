@@ -1,5 +1,6 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -7,10 +8,14 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import RockinLib.MotorControllers.RockinTalon;
 import RockinLib.Sensors.RockinCancoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.ShooterTarget;
 import frc.robot.Constants;
@@ -29,6 +34,8 @@ public class Shooter extends SubsystemBase  {
     TalonFXConfiguration flywheelConfig;
     TalonFXConfiguration pivotConfig;
     CommandSwerveDrivetrain drivetrain;
+    MotionMagicVoltage pivotVoltage;
+    VelocityVoltage flywheelVoltage;
     public Shooter(CommandSwerveDrivetrain drive){
         drivetrain = drive;
         topFlywheel = new RockinTalon(ShooterConstants.SHOOTER_TOPFLYWHEEL_ID, 50);
@@ -36,15 +43,20 @@ public class Shooter extends SubsystemBase  {
         topFeeder = new RockinTalon(ShooterConstants.SHOOTER_TOPFEEDER_ID,40);
         bottomFeeder = new RockinTalon(ShooterConstants.SHOOTER_BOTTOMFEEDER_ID,40);
         pivot = new RockinTalon(0, 40);
-        encoder = new RockinCancoder(ShooterConstants.SHOOTER_PIVOT_ENCODER_ID, "rio", "Pivot Encoder");
-        encoder.attachToTalonFX(pivot);
+        encoder = new RockinCancoder(ShooterConstants.SHOOTER_PIVOT_ENCODER_ID, "rio", "Pivot Encoder",ShooterConstants.SHOOTER_PIVOT_ENCODER_OFFSET,true);
+        encoder.attachToTalonFX(pivot,1,125);
         flywheelConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0.41).withKV(0.25).withKP(0.1));
-        topFlywheel.getConfigurator().apply(flywheelConfig);
-        bottomFlywheel.getConfigurator().apply(flywheelConfig);
-        topFeeder.getConfigurator().apply(flywheelConfig);
-        bottomFeeder.getConfigurator().apply(flywheelConfig);
-        pivotConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0).withKV(2.25).withKG(0.17).withKP(0.1));
-        pivot.getConfigurator().apply(pivotConfig); 
+        topFlywheel.getConfigurator().refresh(flywheelConfig);
+        bottomFlywheel.getConfigurator().refresh(flywheelConfig);
+        topFeeder.getConfigurator().refresh(flywheelConfig);
+        bottomFeeder.getConfigurator().refresh(flywheelConfig);
+        pivotConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0).withKV(2.25).withKG(0.17).withKP(0.1))
+        .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5));
+        pivot.getConfigurator().refresh(pivotConfig); 
+        flywheelVoltage = new VelocityVoltage(0);
+        flywheelVoltage.Slot = 0;
+        pivotVoltage = new MotionMagicVoltage(5);
+        pivotVoltage.withSlot(0);
     }
     public enum PivotState{
         SPEAKER,
@@ -58,58 +70,67 @@ public class Shooter extends SubsystemBase  {
     public void periodic() {    
         switch (state) {
             case SPEAKER:
-                pivot.setControl(new MotionMagicVoltage(Units.degreesToRotations(getSpeakerAngle())));
+                pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(getSpeakerAngle())));
                 break;
             case AMP:
-                pivot.setControl(new MotionMagicVoltage(Units.degreesToRotations(110)));
+                pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(110)));
                 break;
             case STOW:
-                pivot.setControl(new MotionMagicVoltage(Units.degreesToRotations(5)));
+                pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(5)));
                 break;
             default:
                 break;
         }
+        SmartDashboard.putBoolean("Shooting", shooting);
+        SmartDashboard.putString("Shooter Aim State", state.toString());
+        SmartDashboard.putNumber("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
     }
     public double getSpeakerAngle(){
         
         return (target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
     }
+    public double getSpeakerVelocity(){
+        return (target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
+    }
     public Command ShootSpeaker(){
-        return runOnce(() -> {
-            shooting = true;
-            var velocity = new VelocityVoltage((target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity);
-            velocity.Slot = 0;
-            topFlywheel.setControl(velocity);
-            bottomFlywheel.setControl(velocity);
-            Commands.waitUntil(() -> topFlywheel.getVelocity().getValueAsDouble() == velocity.Velocity);
-            topFeeder.setControl(velocity);
-            bottomFeeder.setControl(velocity);
-            Commands.waitSeconds(1);
-            velocity.Velocity = 0;
-            shooting = false;
-        });
+        return new SequentialCommandGroup(
+            runOnce(() -> {
+                shooting = true;
+                flywheelVoltage.withVelocity(getSpeakerVelocity());
+                topFlywheel.setControl(flywheelVoltage);
+                bottomFlywheel.setControl(flywheelVoltage);
+                }),
+                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),50)), Commands.waitSeconds(3)),
+            runOnce(() -> {
+                topFeeder.setControl(flywheelVoltage);
+                bottomFeeder.setControl(flywheelVoltage);
+            }),
+            Commands.waitSeconds(1),
+            runOnce(() -> {
+                flywheelVoltage.Velocity = 0;
+                shooting = false;
+            }));
     }
     public Command ShootAmp(){
-        return runOnce(() -> {
-            shooting = true;
-            var velocity = new VelocityVoltage(40);
-            velocity.Slot = 0;
-            topFlywheel.setControl(velocity);
-            bottomFlywheel.setControl(velocity);
-            Commands.waitUntil(() -> topFlywheel.getVelocity().getValueAsDouble() == velocity.Velocity);
-            topFeeder.setControl(velocity);
-            bottomFeeder.setControl(velocity);
-            Commands.waitSeconds(1);
-            velocity.Velocity = 0;
-            shooting = false;
-        });
+        return new SequentialCommandGroup(
+            runOnce(() -> {
+                shooting = true;
+                flywheelVoltage.withVelocity(500);
+                topFlywheel.setControl(flywheelVoltage);
+                bottomFlywheel.setControl(flywheelVoltage);
+                }),
+                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),50)), Commands.waitSeconds(3)),
+            runOnce(() -> {
+                topFeeder.setControl(flywheelVoltage);
+                bottomFeeder.setControl(flywheelVoltage);
+            }),
+            Commands.waitSeconds(1),
+            runOnce(() -> {
+                flywheelVoltage.Velocity = 0;
+                shooting = false;
+            }));
     }
     public boolean isShooting(){
         return shooting;
     }
-
-
-
-
-
 }

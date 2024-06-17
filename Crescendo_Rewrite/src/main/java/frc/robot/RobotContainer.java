@@ -8,6 +8,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
+import RockinLib.Control.RockinGuitar;
 import RockinLib.Control.RockinJoystick;
 import RockinLib.LED.RockinBlinkin;
 import RockinLib.LED.RockinBlinkin.BlinkinPattern;
@@ -48,7 +49,7 @@ public class RobotContainer {
   Trigger LEDShooting;
   RockinJoystick leftJoystick;
   RockinJoystick rightJoystick;
-  CommandJoystick guitar;
+  RockinGuitar guitarHero;
   PathPlannerPath fournote1 = PathPlannerPath.fromPathFile("4note1");
   PathPlannerPath fournote2 = PathPlannerPath.fromPathFile("4note2");
   PathPlannerPath fournote3 = PathPlannerPath.fromPathFile("4note3");
@@ -69,10 +70,11 @@ public class RobotContainer {
     climber = new Climber();
     leftJoystick = new RockinJoystick(0);
     rightJoystick = new RockinJoystick(1);
-    guitar = new CommandJoystick(2);
-    SmartDashboard.putData(chooser);
+    guitarHero = new RockinGuitar(2);
     chooser.addOption("OnePiece", 0);
     chooser.addOption("5piece" , 1);
+    SmartDashboard.putData(chooser);
+    
     configureBindings();
   }
 
@@ -102,8 +104,8 @@ public class RobotContainer {
     rightJoystick.ThumbButton().onTrue(shooter.ShootAmp());
     
     //config guitar button presses (climb)
-    guitar.button(0).whileTrue(climber.climbersUp());
-    guitar.button(1).whileTrue(climber.climbersDown());
+    guitarHero.cyan().whileTrue(climber.climbersUp());
+    guitarHero.red().whileTrue(climber.climbersDown());
   }
   private Command chooseAuto(){
     switch ((int) chooser.getSelected()) {

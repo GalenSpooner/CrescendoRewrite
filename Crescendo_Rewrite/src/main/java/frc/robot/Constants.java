@@ -16,6 +16,7 @@ public class Constants {
         public static final int SHOOTER_TOPFEEDER_ID = 33;
         public static final int SHOOTER_PIVOT_ENCODER_ID = 34;
         public static final int SHOOTER_PIVOTMOTOR_ID = 35;
+        public static final double SHOOTER_PIVOT_ENCODER_OFFSET = 23; //do not know what the actual value is
     }
     public static class ClimberConstants{
         public static final int CLIMBER_LEFT_ID = 40;

@@ -10,7 +10,7 @@ public class RockinTalon extends TalonFX {
     TalonFXConfigurator configurator;
     public RockinTalon(int deviceId, double supplyCurrentLimit) {
         super(deviceId);
-        this.getConfigurator().apply(new TalonFXConfiguration().withCurrentLimits(new CurrentLimitsConfigs().withSupplyCurrentLimit(supplyCurrentLimit).withSupplyCurrentLimitEnable(true)));
+        this.getConfigurator().refresh(new TalonFXConfiguration().withCurrentLimits(new CurrentLimitsConfigs().withSupplyCurrentLimit(supplyCurrentLimit).withSupplyCurrentLimitEnable(true)));
         
     }
     public RockinTalon(int deviceId){
