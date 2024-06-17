@@ -25,6 +25,7 @@ public class Shooter extends SubsystemBase  {
     RockinTalon pivot;
     RockinCancoder encoder;
     ShooterTarget target;
+    boolean shooting = false;
     TalonFXConfiguration flywheelConfig;
     TalonFXConfiguration pivotConfig;
     CommandSwerveDrivetrain drivetrain;
@@ -75,6 +76,7 @@ public class Shooter extends SubsystemBase  {
     }
     public Command ShootSpeaker(){
         return runOnce(() -> {
+            shooting = true;
             var velocity = new VelocityVoltage((target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity);
             velocity.Slot = 0;
             topFlywheel.setControl(velocity);
@@ -84,10 +86,12 @@ public class Shooter extends SubsystemBase  {
             bottomFeeder.setControl(velocity);
             Commands.waitSeconds(1);
             velocity.Velocity = 0;
+            shooting = false;
         });
     }
     public Command ShootAmp(){
         return runOnce(() -> {
+            shooting = true;
             var velocity = new VelocityVoltage(40);
             velocity.Slot = 0;
             topFlywheel.setControl(velocity);
@@ -97,8 +101,13 @@ public class Shooter extends SubsystemBase  {
             bottomFeeder.setControl(velocity);
             Commands.waitSeconds(1);
             velocity.Velocity = 0;
+            shooting = false;
         });
     }
+    public boolean isShooting(){
+        return shooting;
+    }
+
 
 
 

@@ -11,9 +11,12 @@ import java.util.HashMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Control REV Robotics Blinkin LED controller */
-public class RockinBlinkin {
+public class RockinBlinkin extends SubsystemBase{
   public enum BlinkinPattern {
     /*
      * Fixed Palette Pattern
@@ -235,7 +238,9 @@ public class RockinBlinkin {
   public BlinkinPattern getCurrentPattern() {
     return m_currentPattern;
   }
-
+  public Command setBlinkinPattern(BlinkinPattern pattern){
+    return runOnce(() -> setPattern(pattern));
+  }
   /**
    * Turn off LEDs
    */

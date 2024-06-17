@@ -13,7 +13,7 @@ public class Intake extends SubsystemBase {
     RockinSparkMax bottomMotor;
     DigitalInput beamBreak;
     boolean flipBeamBreak;
-    IntakeState state = IntakeState.NEUTRAL;
+    IntakeState state = IntakeState.IDLE;
     public Intake(){
         beamBreak = new DigitalInput(Constants.IntakeConstants.INTAKE_BEAMBREAK_ID);
         flipBeamBreak = false;
@@ -25,11 +25,11 @@ public class Intake extends SubsystemBase {
         
         
     }
-    private static enum IntakeState{
+    public static enum IntakeState{
         INTAKING(12),
-        OUTTAKING(12),
+        OUTTAKING(-12),
         HOLDING(0),
-        NEUTRAL(0);
+        IDLE(0);
         public final double voltage;
         private IntakeState(double voltage) {
             this.voltage = voltage;
@@ -37,7 +37,8 @@ public class Intake extends SubsystemBase {
     }
     @Override
     public void periodic() {
-        this.state = (beamBreak.get() == !flipBeamBreak) ? IntakeState.HOLDING : this.getState();
+        this.state = (beamBreak.get() == !flipBeamBreak && state != IntakeState.OUTTAKING) ? IntakeState.HOLDING : this.state;
+        this.state = (beamBreak.get() == flipBeamBreak && state == IntakeState.OUTTAKING) ? IntakeState.IDLE : this.state;
         setSpeed(state.voltage);
         SmartDashboard.putString("Intake State", this.getState().toString());
         SmartDashboard.putNumber("Intake Current", topMotor.getAppliedOutput());
@@ -50,7 +51,15 @@ public class Intake extends SubsystemBase {
             this.state = state
         );
     }
+ 
     public IntakeState getState(){
-        return state;
+        return this.state;
     }
+    public boolean isHolding(){
+        return this.state == IntakeState.HOLDING;
+    }
+    public boolean isIntaking(){
+        return this.state == IntakeState.INTAKING;
+    }
+    
 }
