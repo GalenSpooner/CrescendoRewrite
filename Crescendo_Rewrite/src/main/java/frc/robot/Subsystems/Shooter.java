@@ -29,11 +29,11 @@ public class Shooter extends SubsystemBase  {
     RockinTalon bottomFeeder;
     RockinTalon pivot;
     RockinCancoder encoder;
-    ShooterTarget target;
+    static ShooterTarget target;
     boolean shooting = false;
     TalonFXConfiguration flywheelConfig;
     TalonFXConfiguration pivotConfig;
-    CommandSwerveDrivetrain drivetrain;
+    static CommandSwerveDrivetrain drivetrain;
     MotionMagicVoltage pivotVoltage;
     VelocityVoltage flywheelVoltage;
     public Shooter(CommandSwerveDrivetrain drive){
@@ -59,33 +59,25 @@ public class Shooter extends SubsystemBase  {
         pivotVoltage.withSlot(0);
     }
     public enum PivotState{
-        SPEAKER,
-        AMP,
-        STOW
+        SPEAKER(getSpeakerAngle()),
+        AMP(110),
+        STOW(5);
+        public final double angle;
+        private PivotState(double angle) {
+            this.angle = angle;
+        }
     }
     public Command setState(PivotState state){
         return runOnce(() -> this.state = state);
     }
     @Override
     public void periodic() {    
-        switch (state) {
-            case SPEAKER:
-                pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(getSpeakerAngle())));
-                break;
-            case AMP:
-                pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(110)));
-                break;
-            case STOW:
-                pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(5)));
-                break;
-            default:
-                break;
-        }
+        pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(state.angle)));
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());
         SmartDashboard.putNumber("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
     }
-    public double getSpeakerAngle(){
+    public static double getSpeakerAngle(){
         
         return (target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
     }
