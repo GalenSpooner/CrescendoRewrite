@@ -100,7 +100,7 @@ public class Shooter extends SubsystemBase  {
                 topFlywheel.setControl(flywheelVoltage);
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
-                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),50)), Commands.waitSeconds(3)),
+                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),5)), Commands.waitSeconds(1.5)),
             runOnce(() -> {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
@@ -119,7 +119,7 @@ public class Shooter extends SubsystemBase  {
                 topFlywheel.setControl(flywheelVoltage);
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
-                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),50)), Commands.waitSeconds(3)),
+                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),5)), Commands.waitSeconds(1.5)),
             runOnce(() -> {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
