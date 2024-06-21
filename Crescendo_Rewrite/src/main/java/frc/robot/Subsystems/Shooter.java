@@ -62,16 +62,21 @@ public class Shooter extends SubsystemBase  {
         SPEAKER(getSpeakerAngle()),
         AMP(110),
         STOW(5);
-        public final double angle;
+        public double angle;
         private PivotState(double angle) {
             this.angle = angle;
         }
     }
+    
     public Command setState(PivotState state){
         return runOnce(() -> this.state = state);
     }
     @Override
     public void periodic() {    
+        if(!shooting){
+            topFlywheel.setControl(flywheelVoltage.withVelocity(2));
+            bottomFlywheel.setControl(flywheelVoltage.withVelocity(2));
+        }
         pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(state.angle)));
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());

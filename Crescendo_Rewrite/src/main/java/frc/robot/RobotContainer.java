@@ -5,29 +5,24 @@
 package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import RockinLib.Control.RockinGuitar;
 import RockinLib.Control.RockinJoystick;
 import RockinLib.LED.RockinBlinkin;
 import RockinLib.LED.RockinBlinkin.BlinkinPattern;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.Intake;
-import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.Intake.IntakeState;
+import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.Shooter.PivotState;
 import frc.robot.generated.TunerConstants;
 
@@ -39,7 +34,7 @@ public class RobotContainer {
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
   
-  SendableChooser chooser = new SendableChooser<>();
+  SendableChooser chooser = new SendableChooser();
   Shooter shooter;
   Intake intake;
   Climber climber;
@@ -59,6 +54,8 @@ public class RobotContainer {
   PathPlannerPath fivenote2 = PathPlannerPath.fromPathFile("5note2");
   PathPlannerPath fivenotealt = PathPlannerPath.fromPathFile("5notealt");
   PathPlannerPath fivenotealt2 = PathPlannerPath.fromPathFile("5notealt2");
+  PathPlannerPath sixnote1 = PathPlannerPath.fromPathFile("6note1");
+  PathPlannerPath sixnote2 = PathPlannerPath.fromPathFile("6note2");
 
 
 
@@ -88,11 +85,11 @@ public class RobotContainer {
 
     //config LED actions
     LEDHolding = new Trigger(() -> intake.isHolding() && !shooter.isShooting());
-    LEDIntaking = new Trigger(()-> intake.isIntaking() && !shooter.isShooting());
+    LEDIntaking = new Trigger(()-> !intake.isHolding()  && !shooter.isShooting());
     LEDShooting = new Trigger(() -> shooter.isShooting());
-    LEDHolding.onTrue(leds.setBlinkinPattern(BlinkinPattern.AQUA));
+    LEDHolding.onTrue(leds.setBlinkinPattern(BlinkinPattern.GREEN));
     LEDIntaking.onTrue(leds.setBlinkinPattern(BlinkinPattern.DARK_RED));
-    LEDShooting.onTrue(leds.setBlinkinPattern(BlinkinPattern.GREEN));
+    LEDShooting.onTrue(leds.setBlinkinPattern(BlinkinPattern.AQUA));
 
     //config joystick button presses - left joystick primarily intake, right joystick primarily shooter
     leftJoystick.trigger().and(() -> intake.getState() != IntakeState.HOLDING).onTrue(intake.setState(IntakeState.INTAKING));
@@ -115,47 +112,9 @@ public class RobotContainer {
               shooter.ShootSpeaker()
         );
       case 1:
-        return new SequentialCommandGroup(
-
-          shooter.setState(PivotState.SPEAKER),
-          shooter.ShootSpeaker(),
-          intake.setState(IntakeState.INTAKING),
-
-          drivetrain.runPathplannerPathFile(fournote1),
-          drivetrain.runPathplannerPathFile(fournote2),
-
-          shooter.ShootSpeaker(),
-          intake.setState(IntakeState.INTAKING),
-          
-          drivetrain.runPathplannerPathFile(fournote3),
-
-          shooter.ShootSpeaker(),
-          intake.setState(IntakeState.INTAKING),
-
-          drivetrain.runPathplannerPathFile(fournote4),
-          drivetrain.runPathplannerPathFile(fournote5),
-
-          shooter.ShootSpeaker(),
-          intake.setState(IntakeState.INTAKING),
-
-          drivetrain.runPathplannerPathFile(fivenote1),
-
-          //logic for if robot does not pick up a note (it will go to the next note)
-          ((intake.getState() == IntakeState.HOLDING)?new InstantCommand(() ->{
-            new SequentialCommandGroup(
-            drivetrain.runPathplannerPathFile(fivenote2),
-            shooter.ShootSpeaker()
-            );
-
-          }):new InstantCommand(() -> {
-            new SequentialCommandGroup(
-            drivetrain.runPathplannerPathFile(fivenotealt),
-            drivetrain.runPathplannerPathFile(fivenotealt2),
-            shooter.ShootSpeaker()
-            );
-          }))
-
-        );
+       return Autos.fiveNoteAdaptable(drivetrain, shooter, intake, fournote1, fournote2, fournote3, fournote4, fournote5, fivenote1, fivenote2, fivenotealt, fivenotealt2);
+      case 2:
+          return Autos.sixNote(drivetrain, shooter, intake, fournote1, fournote2, fournote3, fournote4, fournote5, fivenote1, fivenote2, fivenotealt, fivenotealt2,sixnote1,sixnote2);
     
       default:
         return null;
