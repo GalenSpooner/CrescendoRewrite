@@ -37,6 +37,8 @@ public class Shooter extends SubsystemBase  {
     MotionMagicVoltage pivotVoltage;
     VelocityVoltage flywheelVoltage;
     public Shooter(CommandSwerveDrivetrain drive){
+        SmartDashboard.putNumber("Manual Angle", 15);
+        SmartDashboard.putNumber("Manual Velocity", 15);
         drivetrain = drive;
         topFlywheel = new RockinTalon(ShooterConstants.SHOOTER_TOPFLYWHEEL_ID, 50);
         bottomFlywheel = new RockinTalon(ShooterConstants.SHOOTER_BOTTOMFLYWHEEL_ID,50);
@@ -61,7 +63,8 @@ public class Shooter extends SubsystemBase  {
     public enum PivotState{
         SPEAKER(getSpeakerAngle()),
         AMP(110),
-        STOW(5);
+        STOW(5),
+        MANUAL(SmartDashboard.getNumber("Manual Angle", 15));
         public double angle;
         private PivotState(double angle) {
             this.angle = angle;
@@ -93,7 +96,7 @@ public class Shooter extends SubsystemBase  {
         return new SequentialCommandGroup(
             runOnce(() -> {
                 shooting = true;
-                flywheelVoltage.withVelocity(getSpeakerVelocity());
+                flywheelVoltage.withVelocity((this.state == PivotState.MANUAL) ? SmartDashboard.getNumber("Manual Velocity", 75) : getSpeakerVelocity());
                 topFlywheel.setControl(flywheelVoltage);
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
@@ -102,7 +105,7 @@ public class Shooter extends SubsystemBase  {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
             }),
-            Commands.waitSeconds(1),
+            Commands.waitSeconds(0.5),
             runOnce(() -> {
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
@@ -112,7 +115,7 @@ public class Shooter extends SubsystemBase  {
         return new SequentialCommandGroup(
             runOnce(() -> {
                 shooting = true;
-                flywheelVoltage.withVelocity(500);
+                flywheelVoltage.withVelocity(50);
                 topFlywheel.setControl(flywheelVoltage);
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
@@ -121,7 +124,7 @@ public class Shooter extends SubsystemBase  {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
             }),
-            Commands.waitSeconds(1),
+            Commands.waitSeconds(0.5),
             runOnce(() -> {
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
