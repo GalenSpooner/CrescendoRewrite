@@ -1,5 +1,7 @@
 package frc.robot.Subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -17,12 +19,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.ShooterTarget;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.ShooterTarget;
 
 public class Shooter extends SubsystemBase  {
     PivotState state = PivotState.STOW;
+    PivotState prevState;
     RockinTalon topFlywheel;
     RockinTalon bottomFlywheel;
     RockinTalon topFeeder;
@@ -36,7 +39,9 @@ public class Shooter extends SubsystemBase  {
     static CommandSwerveDrivetrain drivetrain;
     MotionMagicVoltage pivotVoltage;
     VelocityVoltage flywheelVoltage;
-    public Shooter(CommandSwerveDrivetrain drive){
+    BooleanSupplier intaking;
+    public Shooter(CommandSwerveDrivetrain drive, BooleanSupplier intaking){
+        this.intaking = intaking;
         SmartDashboard.putNumber("Manual Angle", 15);
         SmartDashboard.putNumber("Manual Velocity", 15);
         drivetrain = drive;
@@ -64,6 +69,7 @@ public class Shooter extends SubsystemBase  {
         SPEAKER(getSpeakerAngle()),
         AMP(110),
         STOW(5),
+        INTAKING(45),
         MANUAL(SmartDashboard.getNumber("Manual Angle", 15));
         public double angle;
         private PivotState(double angle) {
@@ -72,14 +78,29 @@ public class Shooter extends SubsystemBase  {
     }
     
     public Command setState(PivotState state){
-        return runOnce(() -> this.state = state);
+        return runOnce(() -> {
+            this.prevState = this.state;
+            this.state = state;
+            
+        });
     }
+
+
     @Override
     public void periodic() {    
         if(!shooting){
             topFlywheel.setControl(flywheelVoltage.withVelocity(2));
             bottomFlywheel.setControl(flywheelVoltage.withVelocity(2));
         }
+        if(intaking.getAsBoolean()){
+            this.prevState = this.state;
+            this.state = PivotState.INTAKING;
+        }
+        if(this.getState() == PivotState.INTAKING && !intaking.getAsBoolean()){
+            this.state = this.prevState;
+            this.prevState = PivotState.INTAKING;
+        }
+
         pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(state.angle)));
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());
@@ -132,5 +153,8 @@ public class Shooter extends SubsystemBase  {
     }
     public boolean isShooting(){
         return shooting;
+    }
+    public PivotState getState(){
+        return this.state;
     }
 }

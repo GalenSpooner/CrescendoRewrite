@@ -40,13 +40,14 @@ public class Autos {
           drivetrain.runPathplannerPathFile(fivenote1),
 
           //logic for if robot does not pick up a note (it will go to the next note)
-          ((intake.getState() == IntakeState.HOLDING)?new InstantCommand(() ->{
+
+          ((intake.getState() == IntakeState.HOLDING) ? new InstantCommand(() ->{
             new SequentialCommandGroup(
             drivetrain.runPathplannerPathFile(fivenote2),
             shooter.ShootSpeaker()
             );
 
-          }):new InstantCommand(() -> {
+          }) : new InstantCommand(() -> {
             new SequentialCommandGroup(
             drivetrain.runPathplannerPathFile(fivenotealt),
             drivetrain.runPathplannerPathFile(fivenotealt2),
@@ -55,6 +56,7 @@ public class Autos {
           }))
         );
     }
+    
     public static Command sixNote(CommandSwerveDrivetrain drivetrain, Shooter shooter, Intake intake, PathPlannerPath fournote1, PathPlannerPath fournote2, PathPlannerPath fournote3, PathPlannerPath fournote4, PathPlannerPath fournote5, PathPlannerPath fivenote1, PathPlannerPath fivenote2, PathPlannerPath fivenotealt, PathPlannerPath fivenotealt2, PathPlannerPath sixnote1, PathPlannerPath sixnote2){
         return new SequentialCommandGroup(
             fiveNoteAdaptable(drivetrain, shooter, intake, fournote1, fournote2, fournote3, fournote4, fournote5, fivenote1, fivenote2, fivenotealt, fivenotealt2),
@@ -62,6 +64,7 @@ public class Autos {
           drivetrain.runPathplannerPathFile(sixnote1),
 
           //dont bother to do anything if 6th note wasn't picked up
+
           ((intake.getState() == IntakeState.HOLDING)? new InstantCommand(() -> {
             drivetrain.runPathplannerPathFile(sixnote2);
             shooter.ShootSpeaker();

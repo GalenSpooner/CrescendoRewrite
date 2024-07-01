@@ -11,8 +11,8 @@ import java.util.HashMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Control REV Robotics Blinkin LED controller */
@@ -159,9 +159,10 @@ public class RockinBlinkin extends SubsystemBase{
     BlinkinPattern.STROBE_BLUE
   };
 
-  public RockinBlinkin(int port) {
+  public RockinBlinkin(int port, String name) {
+    super(name);
     m_blinkin = new Spark(port);
-
+    
     m_allianceColors.put(Alliance.Red, RED_ALLIANCE_PATTERNS);
     m_allianceColors.put(Alliance.Blue, BLUE_ALLIANCE_PATTERNS);
   }
@@ -171,7 +172,7 @@ public class RockinBlinkin extends SubsystemBase{
    * @return BlinkinLEDController object
    */
   public static RockinBlinkin getInstance() {
-    if (m_controller == null) m_controller = new RockinBlinkin(0);
+    if (m_controller == null) m_controller = new RockinBlinkin(0, "blinkin");
     return m_controller;
   }
 
@@ -246,5 +247,9 @@ public class RockinBlinkin extends SubsystemBase{
    */
   public void off() {
     setPattern(BlinkinPattern.BLACK);
+  }
+  @Override
+  public void periodic() {
+      SmartDashboard.putString("Blinkin Color", getName());
   }
 }

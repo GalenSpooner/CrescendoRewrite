@@ -1,9 +1,6 @@
 package RockinLib.MotorControllers;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
-import edu.wpi.first.units.Current;
 
 //i hate rev
 public class RockinSparkMax extends CANSparkMax {

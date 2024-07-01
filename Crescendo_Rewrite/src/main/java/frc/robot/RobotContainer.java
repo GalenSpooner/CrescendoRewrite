@@ -61,9 +61,10 @@ public class RobotContainer {
 
   public RobotContainer() {
     drivetrain = TunerConstants.DriveTrain;
-    shooter = new Shooter(drivetrain);
     intake = new Intake();
+    shooter = new Shooter(drivetrain, () -> intake.isIntaking());
     climber = new Climber();
+    leds = new RockinBlinkin(3, "blinkin");
     leftJoystick = new RockinJoystick(0);
     rightJoystick = new RockinJoystick(1);
     guitarHero = new RockinGuitar(2);
