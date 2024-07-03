@@ -70,6 +70,7 @@ public class Shooter extends SubsystemBase  {
         AMP(110),
         STOW(5),
         INTAKING(45),
+        PASSING(75),
         MANUAL(SmartDashboard.getNumber("Manual Angle", 15));
         public double angle;
         private PivotState(double angle) {
@@ -150,6 +151,36 @@ public class Shooter extends SubsystemBase  {
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
             }));
+    }
+    public Command Pass(){
+        return new SequentialCommandGroup(
+            runOnce(() -> {
+                shooting = true;
+                flywheelVoltage.withVelocity(100);
+                topFlywheel.setControl(flywheelVoltage);
+                bottomFlywheel.setControl(flywheelVoltage);
+                }),
+                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),7.5)), Commands.waitSeconds(1.5)),
+            runOnce(() -> {
+                topFeeder.setControl(flywheelVoltage);
+                bottomFeeder.setControl(flywheelVoltage);
+            }),
+            Commands.waitSeconds(0.5),
+            runOnce(() -> {
+                flywheelVoltage.Velocity = 0;
+                shooting = false;
+            }));
+    }
+    public Command Score(){
+        switch(state){
+            case SPEAKER:
+                return ShootSpeaker();
+            case AMP:
+                return ShootAmp();
+            default:
+                return Pass();
+        }
+        
     }
     public boolean isShooting(){
         return shooting;

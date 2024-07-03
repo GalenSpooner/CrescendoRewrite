@@ -25,6 +25,9 @@ public class RockinJoystick extends CommandJoystick{
     public Trigger DpadLeft(){
         return this.pov(270);
     }
+    public Trigger DpadNeutral(){
+        return this.pov(-1);
+    }
 
     //I forgot the numbers of these buttons so these are incomplete
     public Trigger UpperLeft(){

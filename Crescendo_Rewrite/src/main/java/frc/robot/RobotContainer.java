@@ -95,10 +95,11 @@ public class RobotContainer {
     leftJoystick.trigger().and(() -> intake.getState() != IntakeState.HOLDING).onTrue(intake.setState(IntakeState.INTAKING));
     leftJoystick.trigger().onFalse(intake.setState(IntakeState.IDLE));
     leftJoystick.ThumbButton().onTrue(intake.setState(IntakeState.OUTTAKING));
-    rightJoystick.UpperLeft().onTrue(shooter.setState(PivotState.SPEAKER));
-    rightJoystick.UpperRight().onTrue(shooter.setState(PivotState.AMP));
-    rightJoystick.trigger().onTrue(shooter.ShootSpeaker());
-    rightJoystick.ThumbButton().onTrue(shooter.ShootAmp());
+    rightJoystick.DpadUp().onTrue(shooter.setState(PivotState.SPEAKER));
+    rightJoystick.DpadLeft().or(rightJoystick.DpadRight()).onTrue(shooter.setState(PivotState.AMP));
+    rightJoystick.DpadDown().onTrue(shooter.setState(PivotState.PASSING));
+    rightJoystick.DpadNeutral().onTrue(shooter.setState(PivotState.STOW));
+    rightJoystick.trigger().onTrue(shooter.Score());
     
     //config guitar button presses (climb)
     guitarHero.cyan().whileTrue(climber.climbersUp());
