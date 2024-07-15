@@ -15,6 +15,7 @@ import RockinLib.LED.RockinBlinkin.BlinkinPattern;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.Climber;
@@ -55,6 +56,7 @@ public class RobotContainer {
   PathPlannerPath fivenotealt2 = PathPlannerPath.fromPathFile("5notealt2");
   PathPlannerPath sixnote1 = PathPlannerPath.fromPathFile("6note1");
   PathPlannerPath sixnote2 = PathPlannerPath.fromPathFile("6note2");
+  
 
 
 
@@ -71,6 +73,7 @@ public class RobotContainer {
     chooser.addOption("OnePiece", 0);
     chooser.addOption("5piece" , 1);
     SmartDashboard.putData(chooser);
+    
     
     configureBindings();
   }
@@ -102,7 +105,7 @@ public class RobotContainer {
     rightJoystick.trigger().onTrue(shooter.Score());
     
     //config guitar button presses (climb)
-    guitarHero.cyan().whileTrue(climber.climbersUp());
+    guitarHero.green().whileTrue(climber.climbersUp());
     guitarHero.red().whileTrue(climber.climbersDown());
   }
   private Command chooseAuto(){

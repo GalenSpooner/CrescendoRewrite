@@ -9,7 +9,7 @@ public class RockinGuitar extends CommandJoystick{
     public RockinGuitar(int port){
         super(port);
     }
-    public Trigger cyan(){
+    public Trigger green(){
         return this.button(0);
     }
     public Trigger red(){

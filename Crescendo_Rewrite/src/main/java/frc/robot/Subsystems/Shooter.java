@@ -2,6 +2,7 @@ package frc.robot.Subsystems;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -31,7 +32,6 @@ public class Shooter extends SubsystemBase  {
     RockinTalon topFeeder;
     RockinTalon bottomFeeder;
     RockinTalon pivot;
-    RockinCancoder encoder;
     static ShooterTarget target;
     boolean shooting = false;
     TalonFXConfiguration flywheelConfig;
@@ -50,15 +50,13 @@ public class Shooter extends SubsystemBase  {
         topFeeder = new RockinTalon(ShooterConstants.SHOOTER_TOPFEEDER_ID,40);
         bottomFeeder = new RockinTalon(ShooterConstants.SHOOTER_BOTTOMFEEDER_ID,40);
         pivot = new RockinTalon(0, 40);
-        encoder = new RockinCancoder(ShooterConstants.SHOOTER_PIVOT_ENCODER_ID, "rio", "Pivot Encoder",ShooterConstants.SHOOTER_PIVOT_ENCODER_OFFSET,true);
-        encoder.attachToTalonFX(pivot,1,125);
         flywheelConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0.41).withKV(0.25).withKP(0.1));
         topFlywheel.getConfigurator().refresh(flywheelConfig);
         bottomFlywheel.getConfigurator().refresh(flywheelConfig);
         topFeeder.getConfigurator().refresh(flywheelConfig);
         bottomFeeder.getConfigurator().refresh(flywheelConfig);
         pivotConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0).withKV(2.25).withKG(0.17).withKP(0.1))
-        .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5));
+        .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5)).withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(100));
         pivot.getConfigurator().refresh(pivotConfig); 
         flywheelVoltage = new VelocityVoltage(0);
         flywheelVoltage.Slot = 0;
@@ -127,7 +125,7 @@ public class Shooter extends SubsystemBase  {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
             }),
-            Commands.waitSeconds(0.5),
+            Commands.waitSeconds(ShooterConstants.SHOOTER_TIME_TO_SCORE),
             runOnce(() -> {
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
@@ -146,7 +144,7 @@ public class Shooter extends SubsystemBase  {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
             }),
-            Commands.waitSeconds(0.5),
+            Commands.waitSeconds(ShooterConstants.SHOOTER_TIME_TO_SCORE),
             runOnce(() -> {
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
@@ -165,7 +163,7 @@ public class Shooter extends SubsystemBase  {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
             }),
-            Commands.waitSeconds(0.5),
+            Commands.waitSeconds(ShooterConstants.SHOOTER_TIME_TO_SCORE),
             runOnce(() -> {
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
