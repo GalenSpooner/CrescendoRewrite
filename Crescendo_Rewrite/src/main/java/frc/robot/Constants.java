@@ -16,6 +16,8 @@ public class Constants {
         public static final int SHOOTER_TOPFEEDER_ID = 33;
         public static final int SHOOTER_PIVOTMOTOR_ID = 35;
         public static final double SHOOTER_TIME_TO_SCORE = 0.4;
+
+        //speaker shot 
     }
     public static class ClimberConstants{
         public static final int CLIMBER_LEFT_ID = 40;

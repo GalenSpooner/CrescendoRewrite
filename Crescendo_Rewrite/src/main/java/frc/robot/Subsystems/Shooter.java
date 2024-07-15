@@ -44,6 +44,7 @@ public class Shooter extends SubsystemBase  {
         this.intaking = intaking;
         SmartDashboard.putNumber("Manual Angle", 15);
         SmartDashboard.putNumber("Manual Velocity", 15);
+        target = new ShooterTarget(null, null, null);
         drivetrain = drive;
         topFlywheel = new RockinTalon(ShooterConstants.SHOOTER_TOPFLYWHEEL_ID, 50);
         bottomFlywheel = new RockinTalon(ShooterConstants.SHOOTER_BOTTOMFLYWHEEL_ID,50);
@@ -58,6 +59,7 @@ public class Shooter extends SubsystemBase  {
         pivotConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0).withKV(2.25).withKG(0.17).withKP(0.1))
         .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5)).withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(100));
         pivot.getConfigurator().refresh(pivotConfig); 
+        pivot.setPosition(0);
         flywheelVoltage = new VelocityVoltage(0);
         flywheelVoltage.Slot = 0;
         pivotVoltage = new MotionMagicVoltage(5);
@@ -103,6 +105,7 @@ public class Shooter extends SubsystemBase  {
         pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(state.angle)));
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());
+        SmartDashboard.putNumber("Shooter Angle", pivot.getRotorPosition().getValueAsDouble() / 3600);
         SmartDashboard.putNumber("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
     }
     public static double getSpeakerAngle(){
