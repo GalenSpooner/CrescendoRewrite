@@ -88,7 +88,7 @@ public class RobotContainer {
 
     //config LED actions
     LEDHolding = new Trigger(() -> intake.isHolding() && !shooter.isShooting());
-    LEDIntaking = new Trigger(()-> !intake.isHolding()  && !shooter.isShooting());
+    LEDIntaking = new Trigger(()-> !intake.isHolding()  && !shooter.isShooting() && intake.isIntaking());
     LEDShooting = new Trigger(() -> shooter.isShooting());
     LEDHolding.onTrue(leds.setBlinkinPattern(BlinkinPattern.GREEN));
     LEDIntaking.onTrue(leds.setBlinkinPattern(BlinkinPattern.DARK_RED));

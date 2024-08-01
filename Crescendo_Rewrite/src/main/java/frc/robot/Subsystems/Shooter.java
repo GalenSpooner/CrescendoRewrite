@@ -5,6 +5,7 @@ import java.util.function.BooleanSupplier;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -32,7 +33,8 @@ public class Shooter extends SubsystemBase  {
     RockinTalon topFeeder;
     RockinTalon bottomFeeder;
     RockinTalon pivot;
-    static ShooterTarget target;
+    static ShooterTarget speakerTarget;
+    static ShooterTarget passTarget;
     boolean shooting = false;
     TalonFXConfiguration flywheelConfig;
     TalonFXConfiguration pivotConfig;
@@ -44,7 +46,8 @@ public class Shooter extends SubsystemBase  {
         this.intaking = intaking;
         SmartDashboard.putNumber("Manual Angle", 15);
         SmartDashboard.putNumber("Manual Velocity", 15);
-        target = new ShooterTarget(null, null, null);
+        speakerTarget = new ShooterTarget(null, null, null);
+        passTarget = new ShooterTarget(null, null, null);
         drivetrain = drive;
         topFlywheel = new RockinTalon(ShooterConstants.SHOOTER_TOPFLYWHEEL_ID, 50);
         bottomFlywheel = new RockinTalon(ShooterConstants.SHOOTER_BOTTOMFLYWHEEL_ID,50);
@@ -57,12 +60,13 @@ public class Shooter extends SubsystemBase  {
         topFeeder.getConfigurator().refresh(flywheelConfig);
         bottomFeeder.getConfigurator().refresh(flywheelConfig);
         pivotConfig = new TalonFXConfiguration().withSlot0(new Slot0Configs().withKA(0).withKV(2.25).withKG(0.17).withKP(0.1))
-        .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5)).withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(100));
+        .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5)).withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(100)).withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs().withForwardSoftLimitEnable(true).withForwardSoftLimitThreshold(70 * 100));
         pivot.getConfigurator().refresh(pivotConfig); 
         pivot.setPosition(0);
+        
         flywheelVoltage = new VelocityVoltage(0);
         flywheelVoltage.Slot = 0;
-        pivotVoltage = new MotionMagicVoltage(5);
+        pivotVoltage = new MotionMagicVoltage(0);
         pivotVoltage.withSlot(0);
     }
     public enum PivotState{
@@ -70,7 +74,8 @@ public class Shooter extends SubsystemBase  {
         AMP(110),
         STOW(5),
         INTAKING(45),
-        PASSING(75),
+        PASSING(getPassAngle()),
+        CLIMB(90),
         MANUAL(SmartDashboard.getNumber("Manual Angle", 15));
         public double angle;
         private PivotState(double angle) {
@@ -110,10 +115,17 @@ public class Shooter extends SubsystemBase  {
     }
     public static double getSpeakerAngle(){
         
-        return (target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
+        return (speakerTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
     }
     public double getSpeakerVelocity(){
-        return (target.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
+        return (speakerTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
+    }
+    public static double getPassAngle(){
+         return (passTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
+    }
+    public double getPassVelocity(){
+
+    return (passTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
     }
     public Command ShootSpeaker(){
         return new SequentialCommandGroup(
@@ -157,7 +169,7 @@ public class Shooter extends SubsystemBase  {
         return new SequentialCommandGroup(
             runOnce(() -> {
                 shooting = true;
-                flywheelVoltage.withVelocity(100);
+                flywheelVoltage.withVelocity(getPassVelocity());
                 topFlywheel.setControl(flywheelVoltage);
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
