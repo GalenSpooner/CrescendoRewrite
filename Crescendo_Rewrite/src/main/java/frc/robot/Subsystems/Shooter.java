@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.ShooterTarget;
 
@@ -35,6 +36,7 @@ public class Shooter extends SubsystemBase  {
     RockinTalon pivot;
     static ShooterTarget speakerTarget;
     static ShooterTarget passTarget;
+    static ShooterTarget humanTarget;
     boolean shooting = false;
     TalonFXConfiguration flywheelConfig;
     TalonFXConfiguration pivotConfig;
@@ -48,6 +50,7 @@ public class Shooter extends SubsystemBase  {
         SmartDashboard.putNumber("Manual Velocity", 15);
         speakerTarget = new ShooterTarget(null, null, null);
         passTarget = new ShooterTarget(null, null, null);
+        humanTarget = new ShooterTarget(null, null, null);
         drivetrain = drive;
         topFlywheel = new RockinTalon(ShooterConstants.SHOOTER_TOPFLYWHEEL_ID, 50);
         bottomFlywheel = new RockinTalon(ShooterConstants.SHOOTER_BOTTOMFLYWHEEL_ID,50);
@@ -63,7 +66,6 @@ public class Shooter extends SubsystemBase  {
         .withMotionMagic(new MotionMagicConfigs().withMotionMagicAcceleration(0.75).withMotionMagicCruiseVelocity(5)).withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(100)).withSoftwareLimitSwitch(new SoftwareLimitSwitchConfigs().withForwardSoftLimitEnable(true).withForwardSoftLimitThreshold(70 * 100));
         pivot.getConfigurator().refresh(pivotConfig); 
         pivot.setPosition(0);
-        
         flywheelVoltage = new VelocityVoltage(0);
         flywheelVoltage.Slot = 0;
         pivotVoltage = new MotionMagicVoltage(0);
@@ -75,6 +77,7 @@ public class Shooter extends SubsystemBase  {
         STOW(5),
         INTAKING(45),
         PASSING(getPassAngle()),
+        HUMANPASS(getHumanAngle()),
         CLIMB(90),
         MANUAL(SmartDashboard.getNumber("Manual Angle", 15));
         public double angle;
@@ -123,6 +126,12 @@ public class Shooter extends SubsystemBase  {
     public static double getPassAngle(){
          return (passTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
     }
+    public static double getHumanAngle(){
+        return (humanTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
+    }
+    public static double getHumanVelocity(){
+        return (humanTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
+    }
     public double getPassVelocity(){
 
     return (passTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
@@ -136,6 +145,25 @@ public class Shooter extends SubsystemBase  {
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
                 new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),5)), Commands.waitSeconds(1.5)),
+            runOnce(() -> {
+                topFeeder.setControl(flywheelVoltage);
+                bottomFeeder.setControl(flywheelVoltage);
+            }),
+            Commands.waitSeconds(ShooterConstants.SHOOTER_TIME_TO_SCORE),
+            runOnce(() -> {
+                flywheelVoltage.Velocity = 0;
+                shooting = false;
+            }));
+    }
+    public Command PassToHuman(){
+        return new SequentialCommandGroup(
+            runOnce(() -> {
+                shooting = true;
+                flywheelVoltage.withVelocity(getHumanVelocity());
+                topFlywheel.setControl(flywheelVoltage);
+                bottomFlywheel.setControl(flywheelVoltage);
+                }),
+                new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),7.5)), Commands.waitSeconds(1.5)),
             runOnce(() -> {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
@@ -190,6 +218,8 @@ public class Shooter extends SubsystemBase  {
                 return ShootSpeaker();
             case AMP:
                 return ShootAmp();
+            case HUMANPASS:
+                return PassToHuman();
             default:
                 return Pass();
         }

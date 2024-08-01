@@ -35,6 +35,7 @@ public class RobotContainer {
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
   
   SendableChooser chooser = new SendableChooser();
+  SendableChooser modeChooser = new SendableChooser();
   Shooter shooter;
   Intake intake;
   Climber climber;
@@ -72,6 +73,8 @@ public class RobotContainer {
     guitarHero = new RockinGuitar(2);
     chooser.addOption("OnePiece", 0);
     chooser.addOption("5piece" , 1);
+    modeChooser.addOption("Competition", "Competition");
+    modeChooser.addOption("Outreach", "Outreach");
     SmartDashboard.putData(chooser);
     
     
@@ -100,7 +103,11 @@ public class RobotContainer {
     leftJoystick.ThumbButton().onTrue(intake.setState(IntakeState.OUTTAKING));
     rightJoystick.DpadUp().onTrue(shooter.setState(PivotState.SPEAKER));
     rightJoystick.DpadLeft().or(rightJoystick.DpadRight()).onTrue(shooter.setState(PivotState.AMP));
-    rightJoystick.DpadDown().onTrue(shooter.setState(PivotState.PASSING));
+    if(modeChooser.getSelected() == "Outreach"){
+      rightJoystick.DpadDown().onTrue(shooter.setState(PivotState.HUMANPASS));
+    } else {
+      rightJoystick.DpadDown().onTrue(shooter.setState(PivotState.PASSING));
+    }
     rightJoystick.DpadNeutral().onTrue(shooter.setState(PivotState.STOW));
     rightJoystick.trigger().onTrue(shooter.Score());
     
