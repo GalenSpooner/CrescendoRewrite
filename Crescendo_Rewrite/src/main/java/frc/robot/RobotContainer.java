@@ -12,6 +12,10 @@ import RockinLib.Control.RockinGuitar;
 import RockinLib.Control.RockinJoystick;
 import RockinLib.LED.RockinBlinkin;
 import RockinLib.LED.RockinBlinkin.BlinkinPattern;
+import dev.doglog.DogLog;
+import dev.doglog.DogLogOptions;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,6 +31,7 @@ import frc.robot.Subsystems.Shooter.PivotState;
 import frc.robot.generated.TunerConstants;
 
 public class RobotContainer {
+  
   CommandSwerveDrivetrain drivetrain;
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; 
   private double MaxAngularRate = 1.5 * Math.PI; 
@@ -63,6 +68,8 @@ public class RobotContainer {
 
 
   public RobotContainer() {
+    DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
+    DogLog.setOptions(new DogLogOptions().withCaptureDs(false).withCaptureNt(false).withLogExtras(true).withNtPublish(true));
     drivetrain = TunerConstants.DriveTrain;
     intake = new Intake();
     shooter = new Shooter(drivetrain, () -> intake.isIntaking());

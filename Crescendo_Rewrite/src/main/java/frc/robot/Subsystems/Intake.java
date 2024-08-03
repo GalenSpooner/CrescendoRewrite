@@ -2,6 +2,7 @@ package frc.robot.Subsystems;
 
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import RockinLib.MotorControllers.RockinSparkMax;
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,6 +44,7 @@ public class Intake extends SubsystemBase {
         this.state = (beamBreak.get() == flipBeamBreak && state == IntakeState.OUTTAKING) ? IntakeState.IDLE : this.state;
         setSpeed(state.voltage);
         SmartDashboard.putString("Intake State", this.getState().toString());
+        DogLog.log(" Intake State", this.state);
         SmartDashboard.putNumber("Intake Current", topMotor.getAppliedOutput());
     }
     private void setSpeed(double voltage){

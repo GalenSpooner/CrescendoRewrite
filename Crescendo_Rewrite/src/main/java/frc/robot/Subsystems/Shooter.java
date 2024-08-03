@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import RockinLib.MotorControllers.RockinTalon;
 import RockinLib.Sensors.RockinCancoder;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -113,8 +114,11 @@ public class Shooter extends SubsystemBase  {
         pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(state.angle)));
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());
+        DogLog.log("Shooter aim state", state);
         SmartDashboard.putNumber("Shooter Angle", pivot.getRotorPosition().getValueAsDouble() / 3600);
+        DogLog.log("Shooter Angle", pivot.getRotorPosition().getValueAsDouble() / 3600);
         SmartDashboard.putNumber("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
+        DogLog.log("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
     }
     public static double getSpeakerAngle(){
         
@@ -213,6 +217,7 @@ public class Shooter extends SubsystemBase  {
             }));
     }
     public Command Score(){
+        DogLog.log("Shot", "Shot");
         switch(state){
             case SPEAKER:
                 return ShootSpeaker();
