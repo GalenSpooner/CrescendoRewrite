@@ -2,6 +2,7 @@ package frc.robot.Subsystems;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -13,8 +14,10 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import RockinLib.MotorControllers.RockinTalon;
 import RockinLib.Sensors.RockinCancoder;
 import dev.doglog.DogLog;
+import edu.wpi.first.hal.CANData;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -111,7 +114,7 @@ public class Shooter extends SubsystemBase  {
             this.prevState = PivotState.INTAKING;
         }
 
-        pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(state.angle)));
+        pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(MathUtil.clamp(state.angle, 0, 65))));
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());
         DogLog.log("Shooter aim state", state);

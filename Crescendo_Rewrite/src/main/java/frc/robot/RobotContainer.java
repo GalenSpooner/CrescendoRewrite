@@ -33,6 +33,7 @@ import frc.robot.generated.TunerConstants;
 public class RobotContainer {
   
   CommandSwerveDrivetrain drivetrain;
+
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; 
   private double MaxAngularRate = 1.5 * Math.PI; 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -72,7 +73,7 @@ public class RobotContainer {
     DogLog.setOptions(new DogLogOptions().withCaptureDs(false).withCaptureNt(false).withLogExtras(true).withNtPublish(true));
     drivetrain = TunerConstants.DriveTrain;
     intake = new Intake();
-    shooter = new Shooter(drivetrain, () -> intake.isIntaking());
+    shooter = new Shooter(drivetrain, intake::isIntaking);
     climber = new Climber();
     leds = new RockinBlinkin(3, "blinkin");
     leftJoystick = new RockinJoystick(0);

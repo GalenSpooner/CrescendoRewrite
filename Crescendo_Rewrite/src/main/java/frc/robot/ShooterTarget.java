@@ -25,6 +25,7 @@ public class ShooterTarget {
         }
     }
     public targetValues calculateFromDistance(double distance){
+        
         return new targetValues(velocityMap.get(distance),angleMap.get(distance));
         
     }

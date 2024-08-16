@@ -46,6 +46,7 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putString("Intake State", this.getState().toString());
         DogLog.log(" Intake State", this.state);
         SmartDashboard.putNumber("Intake Current", topMotor.getAppliedOutput());
+        
     }
     private void setSpeed(double voltage){
         topMotor.setVoltage(voltage);
