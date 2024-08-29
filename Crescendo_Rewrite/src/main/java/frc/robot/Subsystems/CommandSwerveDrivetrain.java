@@ -29,6 +29,7 @@ import frc.robot.Constants.VisionConstants;
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements subsystem
  * so it can be used in command-based projects easily.
+ * (This is generated code)
  */
 public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsystem {
     

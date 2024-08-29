@@ -119,6 +119,7 @@ public class RobotContainer {
     guitarHero.green().whileTrue(climber.climbersUp());
     guitarHero.red().whileTrue(climber.climbersDown());
   }
+  // returns auto based of of selected autonomous in shuffleboard
   private Command chooseAuto(){
     switch ((int) chooser.getSelected()) {
       case 0:

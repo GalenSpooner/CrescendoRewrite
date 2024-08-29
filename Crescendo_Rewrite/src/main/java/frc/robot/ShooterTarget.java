@@ -11,7 +11,7 @@ public class ShooterTarget {
             this.angle = angle;
         }
     }
-    // I could have done 2d matrix but im lazy
+    // given a list of distances shot from and angles and velocities that work for that shot, interpolate into a function so that you can plug in your distance and get th velocity and angle for that shot
     public ShooterTarget(double[] distances, double[] angles, double[] velocities){
         angleMap = new InterpolatingDoubleTreeMap();
         velocityMap = new InterpolatingDoubleTreeMap();

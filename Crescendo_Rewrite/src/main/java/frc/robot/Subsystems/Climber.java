@@ -19,7 +19,7 @@ public class Climber extends SubsystemBase {
         climber2 = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 0);
         
     }
-
+    
     public Command climbersUp(){
         return run(() -> {
             climber1.set(Value.kForward);

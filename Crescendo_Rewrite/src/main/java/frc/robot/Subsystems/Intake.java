@@ -40,7 +40,7 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         //if beam break triggered and not outtaking, set state to holding
         this.state = (beamBreak.get() == !flipBeamBreak && state != IntakeState.OUTTAKING) ? IntakeState.HOLDING : this.state;
-        //if bam break not triggered and outtaking, set state to idle
+        //if beam break not triggered and outtaking, set state to idle
         this.state = (beamBreak.get() == flipBeamBreak && state == IntakeState.OUTTAKING) ? IntakeState.IDLE : this.state;
         setSpeed(state.voltage);
         SmartDashboard.putString("Intake State", this.getState().toString());
@@ -51,6 +51,7 @@ public class Intake extends SubsystemBase {
     private void setSpeed(double voltage){
         topMotor.setVoltage(voltage);
     }
+    //command for switching behavior of the intake
     public Command setState(IntakeState state){
         return runOnce(() -> 
             this.state = state

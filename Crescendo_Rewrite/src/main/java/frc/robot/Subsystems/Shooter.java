@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import RockinLib.MotorControllers.RockinTalon;
 import RockinLib.Sensors.RockinCancoder;
@@ -48,6 +49,7 @@ public class Shooter extends SubsystemBase  {
     MotionMagicVoltage pivotVoltage;
     VelocityVoltage flywheelVoltage;
     BooleanSupplier intaking;
+    
     public Shooter(CommandSwerveDrivetrain drive, BooleanSupplier intaking){
         this.intaking = intaking;
         SmartDashboard.putNumber("Manual Angle", 15);
@@ -89,7 +91,7 @@ public class Shooter extends SubsystemBase  {
             this.angle = angle;
         }
     }
-    
+    //command for setting shooter behavior
     public Command setState(PivotState state){
         return runOnce(() -> {
             this.prevState = this.state;
@@ -101,20 +103,24 @@ public class Shooter extends SubsystemBase  {
 
     @Override
     public void periodic() {    
+        // if the shooter isnt actively shooting, set it to neutral voltage of 2 volts
         if(!shooting){
             topFlywheel.setControl(flywheelVoltage.withVelocity(2));
             bottomFlywheel.setControl(flywheelVoltage.withVelocity(2));
         }
+        //if the intake is intaking snap the shooter angle to specified angle for intaking
         if(intaking.getAsBoolean()){
             this.prevState = this.state;
             this.state = PivotState.INTAKING;
         }
+        //once intake is done intaking set shooter back to what it was before
         if(this.getState() == PivotState.INTAKING && !intaking.getAsBoolean()){
             this.state = this.prevState;
             this.prevState = PivotState.INTAKING;
         }
-
+        //set the angle of the pivot with a minumum angle of 0 and a maximum angle of 65 to prevent mechanical breaks
         pivot.setControl(pivotVoltage.withPosition(Units.degreesToRotations(MathUtil.clamp(state.angle, 0, 65))));
+        //logging
         SmartDashboard.putBoolean("Shooting", shooting);
         SmartDashboard.putString("Shooter Aim State", state.toString());
         DogLog.log("Shooter aim state", state);
@@ -123,6 +129,7 @@ public class Shooter extends SubsystemBase  {
         SmartDashboard.putNumber("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
         DogLog.log("Flywheel velocity", topFlywheel.getVelocity().getValueAsDouble());
     }
+    //getter methods from shootertargets
     public static double getSpeakerAngle(){
         
         return (speakerTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).angle;
@@ -143,21 +150,26 @@ public class Shooter extends SubsystemBase  {
 
     return (passTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
     }
+
     public Command ShootSpeaker(){
         return new SequentialCommandGroup(
             runOnce(() -> {
                 shooting = true;
+                //if on manual shooting mode set flywheels to the manually specified velocity (used for populating the tables in the shootertargets), otherwise set it to the needed vlocity for the shot
                 flywheelVoltage.withVelocity((this.state == PivotState.MANUAL) ? SmartDashboard.getNumber("Manual Velocity", 75) : getSpeakerVelocity());
                 topFlywheel.setControl(flywheelVoltage);
                 bottomFlywheel.setControl(flywheelVoltage);
                 }),
+                //wait until flywheels are up to speed before feeding note into them
                 new ParallelRaceGroup(Commands.waitUntil(() -> MathUtil.isNear(flywheelVoltage.Velocity,topFlywheel.getVelocity().getValueAsDouble(),5)), Commands.waitSeconds(1.5)),
             runOnce(() -> {
                 topFeeder.setControl(flywheelVoltage);
                 bottomFeeder.setControl(flywheelVoltage);
             }),
+            // wait until note is shot
             Commands.waitSeconds(ShooterConstants.SHOOTER_TIME_TO_SCORE),
             runOnce(() -> {
+                //stop shooting
                 flywheelVoltage.Velocity = 0;
                 shooting = false;
             }));
@@ -219,6 +231,7 @@ public class Shooter extends SubsystemBase  {
                 shooting = false;
             }));
     }
+    //so that you can score in speaker, amp, and pass with one button
     public Command Score(){
         DogLog.log("Shot", "Shot");
         switch(state){
@@ -233,6 +246,7 @@ public class Shooter extends SubsystemBase  {
         }
         
     }
+    //more getters
     public boolean isShooting(){
         return shooting;
     }
