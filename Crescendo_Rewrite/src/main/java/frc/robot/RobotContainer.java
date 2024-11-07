@@ -73,16 +73,18 @@ public class RobotContainer {
     DogLog.setOptions(new DogLogOptions().withCaptureDs(false).withCaptureNt(false).withLogExtras(true).withNtPublish(true));
     drivetrain = TunerConstants.DriveTrain;
     intake = new Intake();
-    shooter = new Shooter(drivetrain, intake::isIntaking);
-    climber = new Climber();
+    
+    //climber = new Climber();
     leds = new RockinBlinkin(3, "blinkin");
     leftJoystick = new RockinJoystick(0);
     rightJoystick = new RockinJoystick(1);
     guitarHero = new RockinGuitar(2);
     chooser.addOption("OnePiece", 0);
     chooser.addOption("5piece" , 1);
-    modeChooser.addOption("Competition", "Competition");
-    modeChooser.addOption("Outreach", "Outreach");
+    modeChooser.addOption("Competition", PivotState.STOW);
+    modeChooser.addOption("Outreach", PivotState.MANUAL);
+    shooter = new Shooter(drivetrain, intake::isIntaking,modeChooser.getSelected());
+    
     SmartDashboard.putData(chooser);
     
     
@@ -116,8 +118,8 @@ public class RobotContainer {
     rightJoystick.trigger().onTrue(shooter.Score());
     
     //config guitar button presses (climb)
-    guitarHero.green().whileTrue(climber.climbersUp());
-    guitarHero.red().whileTrue(climber.climbersDown());
+    // guitarHero.green().whileTrue(climber.climbersUp());
+    // guitarHero.red().whileTrue(climber.climbersDown());
   }
   // returns auto based of of selected autonomous in shuffleboard
   private Command chooseAuto(){
