@@ -114,7 +114,7 @@ public class RobotContainer {
     rightJoystick.DpadUp().onTrue(shooter.setState(PivotState.SPEAKER));
     rightJoystick.DpadLeft().or(rightJoystick.DpadRight()).onTrue(shooter.setState(PivotState.AMP));
     rightJoystick.DpadDown().onTrue((modeChooser.getSelected() == "Outreach") ? shooter.setState(PivotState.HUMANPASS) : shooter.setState(PivotState.PASSING));
-    rightJoystick.DpadNeutral().onTrue(shooter.setState(PivotState.STOW));
+    rightJoystick.DpadNeutral().onTrue(shooter.setState(PivotState.STOW)).and(()->modeChooser.getSelected().toString()=="STOW");
     rightJoystick.trigger().onTrue(shooter.Score());
     
     //config guitar button presses (climb)
