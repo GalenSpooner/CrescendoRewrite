@@ -9,9 +9,12 @@ import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+
 import RockinLib.MotorControllers.RockinTalon;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.ShooterTarget;
@@ -42,6 +46,7 @@ public class Shooter extends SubsystemBase  {
     MotionMagicVoltage pivotVoltage;
     VelocityVoltage flywheelVoltage;
     BooleanSupplier intaking;
+    SwerveRequest.FieldCentricFacingAngle angle;
     
     public Shooter(CommandSwerveDrivetrain drive, BooleanSupplier intaking, Object starterState){
         this.intaking = intaking;
@@ -70,6 +75,7 @@ public class Shooter extends SubsystemBase  {
         flywheelVoltage.Slot = 0;
         pivotVoltage = new MotionMagicVoltage(0);
         pivotVoltage.withSlot(0);
+        angle = new SwerveRequest.FieldCentricFacingAngle();
     }
     public static enum PivotState{
         SPEAKER(getSpeakerAngle()),
@@ -145,8 +151,11 @@ public class Shooter extends SubsystemBase  {
 
     return (passTarget.calculateFromDistance(Math.sqrt((Math.pow((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED : drivetrain.getPose().getX(),2)) + (Math.pow(5.5 - drivetrain.getPose().getY(), 2))))).velocity;
     }
+    public double getSpeakerHeading(){
+        return Math.atan((DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) ? (drivetrain.getPose().getX() / (5.5 - drivetrain.getPose().getY())) : (drivetrain.getPose().getX() - Constants.FieldConstants.SPEAKER_X_RED / (5.5 - drivetrain.getPose().getY())));
+    }
 
-    public Command ShootSpeaker(){
+    public Command ShootSpeaker(){ 
         return new SequentialCommandGroup(
             runOnce(() -> {
                 shooting = true;
@@ -250,15 +259,17 @@ public class Shooter extends SubsystemBase  {
         DogLog.log("Shot", "Shot");
         switch(state){
             case SPEAKER:
-                return ShootSpeaker();
+
+                return new SequentialCommandGroup(ShootSpeaker()).beforeStarting(drivetrain.applyRequest(() -> angle.withTargetDirection(Rotation2d.fromDegrees(this.getSpeakerHeading())))).alongWith(new WaitCommand(0.25));
             case AMP:
                 return ShootAmp();
             case HUMANPASS:
                 return PassToHuman();
             case MANUAL:
-
+                return manualHumanPass();
             default:
-                return Pass();
+                return new SequentialCommandGroup(Pass()).beforeStarting(drivetrain.applyRequest(() -> angle.withTargetDirection(Rotation2d.fromDegrees(this.getSpeakerHeading())))).alongWith(new WaitCommand(0.25));
+                
         }
         
     }
