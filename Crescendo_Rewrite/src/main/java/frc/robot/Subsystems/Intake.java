@@ -1,15 +1,19 @@
 package frc.robot.Subsystems;
 
+import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import RockinLib.MotorControllers.RockinSparkMax;
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
+    DigitalOutput canSwitch1; //experimental custom PCB that will close a segment of the CAN bus when digital output is triggered using MOSFET's
+    DigitalOutput canSwitch2;
     RockinSparkMax topMotor;
     RockinSparkMax bottomMotor;
     DigitalInput beamBreak;
@@ -67,5 +71,22 @@ public class Intake extends SubsystemBase {
     public boolean isIntaking(){
         return this.state == IntakeState.INTAKING;
     }
-    
+    public MotorAlive checkCanErrors(){
+       Boolean[] aliveList = {(topMotor.getFault(FaultID.kCANTX)||topMotor.getFault(FaultID.kCANRX)),(bottomMotor.getFault(FaultID.kCANTX)||bottomMotor.getFault(FaultID.kCANRX)) };
+       return new MotorAlive();
+    }
+
+}
+class MotorAlive{
+    public boolean topMotor = true;
+    public boolean bottomMotor = true;
+    public boolean getTopAlive(){
+        return topMotor;
+    }
+    public boolean getBottomAlive(){
+        return bottomMotor;
+    }
+    public void setTopAlive(boolean alive){
+        
+    }
 }
